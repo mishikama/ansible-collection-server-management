@@ -1,0 +1,11 @@
+---
+docker_apps: []
+# Item format (see the example in inventory/group_vars/all.yml):
+# - name: myapp
+#   state: started        # started|stopped|absent
+#   pull: missing          # always|missing|never
+#   remove_orphans: true
+#   compose_src: "{{ playbook_dir }}/../files/docker-compose/myapp"   # directory with docker-compose.yml
+#   env_file: ""           # optional, path to .env on the control machine
+
+docker_apps_base_dir: /opt/docker-apps   # where compose files are deployed on the server

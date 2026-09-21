@@ -1,0 +1,6 @@
+---
+- name: Deploy and manage docker-compose applications
+  hosts: docker_hosts
+  become: true
+  roles:
+    - role: mishikama.server_management.docker_apps

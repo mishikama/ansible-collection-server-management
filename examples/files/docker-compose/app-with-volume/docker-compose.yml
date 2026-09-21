@@ -1,0 +1,15 @@
+# Example stack with a named volume (data survives docker compose down unless
+# docker_apps[].remove_volumes: true is set explicitly) and a config bind-mount.
+services:
+  web:
+    image: nginx:alpine
+    container_name: app-with-volume
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - static-content:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  static-content:

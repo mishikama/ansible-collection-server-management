@@ -1,0 +1,6 @@
+---
+- name: Manage users and SSH access
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: mishikama.server_management.users

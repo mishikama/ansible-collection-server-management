@@ -1,0 +1,54 @@
+---
+# Runs for each item in docker_apps (variable `app`)
+
+- name: "{{ app.name }}: create app directory"
+  ansible.builtin.file:
+    path: "{{ docker_apps_base_dir }}/{{ app.name }}"
+    state: directory
+    mode: "0755"
+
+- name: "{{ app.name }}: sync docker-compose files to server"
+  ansible.builtin.copy:
+    src: "{{ app.compose_src }}/"
+    dest: "{{ docker_apps_base_dir }}/{{ app.name }}/"
+    mode: preserve
+  when: app.compose_src is defined
+
+- name: "{{ app.name }}: deploy .env file"
+  ansible.builtin.copy:
+    src: "{{ app.env_file }}"
+    dest: "{{ docker_apps_base_dir }}/{{ app.name }}/.env"
+    mode: "0600"
+  when: app.env_file is defined and app.env_file | length > 0
+
+- name: "{{ app.name }}: start/update stack (docker compose up)"
+  community.docker.docker_compose_v2:
+    project_src: "{{ docker_apps_base_dir }}/{{ app.name }}"
+    state: present
+    pull: "{{ app.pull | default('missing') }}"
+    remove_orphans: "{{ app.remove_orphans | default(true) }}"
+  when: (app.state | default('started')) == 'started'
+
+- name: "{{ app.name }}: check running containers"
+  ansible.builtin.command:
+    cmd: docker compose ps --status running -q
+    chdir: "{{ docker_apps_base_dir }}/{{ app.name }}"
+  register: docker_apps_running_containers
+  changed_when: false
+  when: (app.state | default('started')) == 'stopped'
+
+- name: "{{ app.name }}: stop stack (docker compose stop)"
+  ansible.builtin.command:
+    cmd: docker compose stop
+    chdir: "{{ docker_apps_base_dir }}/{{ app.name }}"
+  when:
+    - (app.state | default('started')) == 'stopped'
+    - docker_apps_running_containers.stdout | default('') | length > 0
+
+- name: "{{ app.name }}: remove stack (docker compose down)"
+  community.docker.docker_compose_v2:
+    project_src: "{{ docker_apps_base_dir }}/{{ app.name }}"
+    state: absent
+    remove_orphans: "{{ app.remove_orphans | default(true) }}"
+    remove_volumes: "{{ app.remove_volumes | default(false) }}"
+  when: (app.state | default('started')) == 'absent'

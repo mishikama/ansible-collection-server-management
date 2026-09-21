@@ -1,0 +1,10 @@
+---
+# Full run: packages -> security -> firewall -> users -> docker -> applications
+# ansible-playbook playbooks/site.yml
+
+- import_playbook: packages.yml
+- import_playbook: security.yml
+- import_playbook: firewall.yml
+- import_playbook: users.yml
+- import_playbook: docker.yml
+- import_playbook: apps.yml

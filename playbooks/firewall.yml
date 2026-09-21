@@ -1,0 +1,6 @@
+---
+- name: Configure firewall
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: geerlingguy.firewall

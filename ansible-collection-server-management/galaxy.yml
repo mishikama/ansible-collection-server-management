@@ -1,0 +1,32 @@
+namespace: mishikama
+name: server_management
+version: 1.0.0
+readme: README.md
+authors:
+  - mishkaller <mishkaller@gmail.com>
+
+description: >-
+  Roles for basic Debian/Ubuntu server management: local user accounts
+  (create/remove, ssh keys, sudo), package installation and system updates,
+  deploying and managing docker-compose applications.
+
+license:
+  - MIT
+
+tags:
+  - infrastructure
+  - linux
+  - debian
+  - ubuntu
+  - docker
+  - users
+  - security
+
+# Fill in after you publish the repository on GitHub —
+# needed to install it via `type: git` from another project.
+repository: https://github.com/mishikama/ansible-collection-server-management
+issues: https://github.com/mishikama/ansible-collection-server-management/issues
+
+build_ignore:
+  - "*.retry"
+  - ".git*"
