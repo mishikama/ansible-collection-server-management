@@ -1,0 +1,10 @@
+---
+# Template for secrets. Copy to vault.yml and encrypt it:
+#   cp vault.yml.example vault.yml
+#   ansible-vault encrypt vault.yml
+#
+# Editing:        ansible-vault edit inventory/group_vars/vault.yml
+# Running playbooks: ansible-playbook ... --ask-vault-pass
+#                 or --vault-password-file ~/.vault_pass.txt
+
+vault_deploy_user_password_hash: "$6$rounds=656000$..."   # generate with: mkpasswd -m sha-512

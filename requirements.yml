@@ -1,0 +1,26 @@
+---
+# Public roles and collections this project depends on.
+# Install:  ansible-galaxy install -r requirements.yml
+#           ansible-galaxy collection install -r requirements.yml
+
+roles:
+  # SSH hardening, sudoers, fail2ban, security auto-updates
+  - name: geerlingguy.security
+
+  # Firewall management (iptables) via a simple list of ports
+  - name: geerlingguy.firewall
+
+  # Install Docker Engine + docker compose plugin
+  - name: geerlingguy.docker
+
+# Versions are intentionally not pinned — the latest available is installed.
+# To pin a version (recommended for production), add `version: "X.Y.Z"`
+# to the role after checking: ansible-galaxy role info <name>
+
+collections:
+  - name: community.docker
+    version: ">=3.10.0"
+  - name: community.general
+    version: ">=8.0.0"
+  - name: ansible.posix
+    version: ">=1.5.0"

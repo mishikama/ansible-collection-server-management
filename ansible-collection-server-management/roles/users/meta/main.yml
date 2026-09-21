@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  role_name: users
+  description: Manage local user accounts (create/remove, sudo, ssh keys) on Debian/Ubuntu
+  author: local
+  license: MIT
+  min_ansible_version: "2.14"
+  platforms:
+    - name: Debian
+      versions: [bullseye, bookworm]
+    - name: Ubuntu
+      versions: [focal, jammy, noble]
+dependencies: []

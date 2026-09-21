@@ -1,0 +1,36 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: packages_update_cache | bool
+
+- name: Full dist-upgrade
+  ansible.builtin.apt:
+    upgrade: dist
+  when: packages_upgrade | bool
+  register: packages_upgrade_result
+
+- name: Install base + extra packages
+  ansible.builtin.apt:
+    name: "{{ packages_base + packages_extra }}"
+    state: present
+  when: (packages_base + packages_extra) | length > 0
+
+- name: Autoremove unused packages
+  ansible.builtin.apt:
+    autoremove: true
+    autoclean: true
+  when: packages_autoremove | bool
+
+- name: Check if reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: packages_reboot_required_file
+
+- name: Reboot server if required by updates
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+  when:
+    - packages_reboot_if_required | bool
+    - packages_reboot_required_file.stat.exists

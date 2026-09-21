@@ -1,0 +1,13 @@
+---
+- name: Ensure base directory for compose apps exists
+  ansible.builtin.file:
+    path: "{{ docker_apps_base_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Manage docker-compose applications
+  ansible.builtin.include_tasks: app.yml
+  loop: "{{ docker_apps }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.name }} ({{ app.state | default('started') }})"

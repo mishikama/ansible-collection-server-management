@@ -1,0 +1,12 @@
+---
+users: []
+# Item format (see the example in inventory/group_vars/all.yml):
+# - name: someuser
+#   state: present            # present|absent
+#   sudo: false                # add to the sudo group
+#   sudo_nopasswd: false       # passwordless sudo via /etc/sudoers.d/<name>
+#   shell: /bin/bash
+#   groups: []                 # additional groups
+#   ssh_keys: []                # list of public ssh keys
+#   password_hash: ""          # optional, password hash (sha-512), better left unset
+#   remove_home_on_absent: true

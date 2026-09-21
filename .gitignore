@@ -1,0 +1,13 @@
+*.retry
+.vault_pass.txt
+*.pyc
+__pycache__/
+
+# Your own copy of the inventory (copied from examples/inventory/) — don't
+# publish real hosts/keys; examples/ keeps only the demo version.
+/inventory/
+/files/
+**/group_vars/vault.yml
+
+# Roles installed from requirements.yml (ansible-galaxy install -r requirements.yml)
+roles/geerlingguy.*

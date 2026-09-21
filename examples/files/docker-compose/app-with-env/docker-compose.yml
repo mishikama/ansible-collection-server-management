@@ -1,0 +1,12 @@
+# Example stack with environment variables from .env (see env_file in docker_apps).
+# The docker_apps role copies .env next to this file on the server.
+services:
+  app:
+    image: nginx:alpine
+    container_name: app-with-env
+    restart: unless-stopped
+    environment:
+      - APP_ENV=${APP_ENV}
+      - APP_SECRET=${APP_SECRET}
+    ports:
+      - "${APP_PORT:-8081}:80"

@@ -1,0 +1,6 @@
+---
+- name: Security and SSH hardening
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: geerlingguy.security

@@ -1,0 +1,135 @@
+---
+# =============================================================================
+# EXAMPLE shared variables for all servers.
+# This is part of examples/ — a working but demonstrational set of values.
+# For real use, copy examples/inventory/ into your own project (e.g. into
+# inventory/) and fill in your own hosts, users, ports, etc.
+#
+# Do NOT put secrets (passwords, private keys) here — use group_vars/vault.yml
+# (encrypted with ansible-vault) and pull it in via vars_files / group_vars/all/vault.yml.
+#
+# IMPORTANT: the variable names below match the roles pinned in requirements.yml.
+# If you bump a role's version, check its variable names against its README:
+#   ~/.ansible/roles/<role_name>/README.md
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# geerlingguy.security — SSH hardening, sudoers, auto-updates, fail2ban
+# -----------------------------------------------------------------------------
+security_ssh_port: 22                       # firewall opens this automatically (see playbooks/firewall.yml)
+security_ssh_permit_root_login: "no"
+security_ssh_password_authentication: "no"  # key-based login only
+security_ssh_pubkey_authentication: "yes"
+security_ssh_x11_forwarding: "no"
+security_ssh_allow_tcp_forwarding: "no"
+security_ssh_max_auth_retries: 3
+security_ssh_client_alive_interval: 300
+security_ssh_client_alive_count: 2
+security_ssh_usedns: "no"
+
+security_autoupdate_enabled: true
+security_autoupdate_reboot: true
+security_autoupdate_reboot_time: "03:30"
+
+security_fail2ban_enabled: true
+
+# Users in this list get passwordless sudo (usually empty — manage this per
+# user via the sudo_nopasswd flag in the `users` variable below instead)
+security_sudoers_passwordless: []
+
+# -----------------------------------------------------------------------------
+# geerlingguy.firewall — basic firewall rules (iptables)
+#
+# Don't list the SSH port here — it's added automatically from
+# security_ssh_port (see playbooks/firewall.yml). List only the extra ports
+# you want open.
+# -----------------------------------------------------------------------------
+firewall_extra_tcp_ports:
+  - "80"
+  - "443"
+
+firewall_allowed_udp_ports: []
+
+# Example of point rules (source IP, rate limits, etc.)
+firewall_additional_rules: []
+  # - "iptables -A INPUT -p tcp -s 203.0.113.10 --dport 5432 -j ACCEPT"
+
+firewall_log_dropped_packets: true
+
+# -----------------------------------------------------------------------------
+# geerlingguy.docker — install Docker Engine + compose plugin
+# -----------------------------------------------------------------------------
+docker_edition: "ce"
+docker_install_compose_plugin: true
+docker_users:
+  - deploy   # system users that should be added to the docker group
+
+# -----------------------------------------------------------------------------
+# roles/packages (own) — base packages and system updates
+# -----------------------------------------------------------------------------
+packages_update_cache: true
+packages_upgrade: true          # full dist-upgrade on every run
+packages_autoremove: true
+packages_reboot_if_required: false   # true = reboot the server if the kernel/libs require it
+
+packages_base:
+  - curl
+  - wget
+  - git
+  - vim
+  - htop
+  - unattended-upgrades
+  - ufw            # not used by geerlingguy.firewall, but handy as a fallback/for diagnostics
+  - fail2ban
+  - ca-certificates
+  - gnupg
+
+packages_extra: []   # add project-specific packages in group_vars/<group>.yml
+
+# -----------------------------------------------------------------------------
+# roles/users (own) — server accounts
+# state: present|absent
+# sudo: true|false            — add to the sudo group
+# sudo_nopasswd: true|false   — passwordless sudo (creates /etc/sudoers.d/<user>)
+# ssh_keys: list of the user's public keys
+# -----------------------------------------------------------------------------
+users:
+  - name: deploy
+    state: present
+    sudo: true
+    sudo_nopasswd: false
+    shell: /bin/bash
+    groups: [docker]
+    ssh_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI... deploy@laptop"
+
+  - name: olduser
+    state: absent   # the role will remove this user and their home directory
+
+# -----------------------------------------------------------------------------
+# roles/docker_apps (own) — docker-compose stacks on docker_hosts
+# state: started|stopped|absent
+# compose_src — path on the control machine to the directory with docker-compose.yml
+#               (in this example — examples/files/docker-compose/<name>/)
+# -----------------------------------------------------------------------------
+docker_apps:
+  - name: example-app
+    state: started
+    pull: missing            # always|missing|never
+    remove_orphans: true
+    compose_src: "{{ playbook_dir }}/../examples/files/docker-compose/example-app"
+
+  # Example: a stack with an .env file (env_file is copied to the server as
+  # .env next to docker-compose.yml). See examples/files/docker-compose/app-with-env/.env.example
+  # - name: app-with-env
+  #   state: started
+  #   compose_src: "{{ playbook_dir }}/../examples/files/docker-compose/app-with-env"
+  #   env_file: "{{ playbook_dir }}/../examples/files/docker-compose/app-with-env/.env"
+
+  # Example: a stack with a named volume + config bind-mount.
+  # state: stopped — stop it, the data (volume) is kept.
+  # state: absent + remove_volumes: true — tear down the stack along with its data.
+  # - name: app-with-volume
+  #   state: stopped
+  #   remove_volumes: false
+  #   compose_src: "{{ playbook_dir }}/../examples/files/docker-compose/app-with-volume"

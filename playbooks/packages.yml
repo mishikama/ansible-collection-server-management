@@ -1,0 +1,6 @@
+---
+- name: Install packages and update the system
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: mishikama.server_management.packages
