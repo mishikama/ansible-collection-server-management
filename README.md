@@ -19,11 +19,13 @@ single flag (`-i`) or a line in `ansible.cfg`.
 | SSH hardening, sudoers, fail2ban, security auto-updates | `geerlingguy.security` | public role (Galaxy) |
 | Firewall (iptables, list of allowed ports) | `geerlingguy.firewall` | public role (Galaxy) |
 | Install Docker Engine + `docker compose` plugin | `geerlingguy.docker` | public role (Galaxy) |
+| Install k3s (single-node or multi-node cluster) | `xanmanning.k3s` | public role (Galaxy) |
 | Install packages, `apt dist-upgrade`, auto-reboot | `mishikama.server_management.packages` | own, in the collection (no suitable public one) |
 | Users: create/remove, ssh keys, sudo | `mishikama.server_management.users` | own, in the collection |
 | Deploy and manage docker-compose stacks (start/stop/remove) | `mishikama.server_management.docker_apps` | own, in the collection |
+| Install/upgrade the Flux Operator on a k3s cluster via Helm | `mishikama.server_management.flux_operator` | own, in the collection (no suitable public one) |
 
-The three custom roles are packaged as a separate **Ansible Collection**
+The four custom roles are packaged as a separate **Ansible Collection**
 (`ansible-collection-server-management/`, namespace `mishikama.server_management`) — so they can
 be reused in other projects with a single line in `requirements.yml`,
 no copy-pasting code. Details — `ansible-collection-server-management/README.md`.
@@ -89,6 +91,7 @@ ansible-playbook playbooks/firewall.yml   # firewall
 ansible-playbook playbooks/users.yml      # users and ssh keys
 ansible-playbook playbooks/docker.yml     # install docker
 ansible-playbook playbooks/apps.yml       # deploy/manage docker-compose applications
+ansible-playbook playbooks/k3s.yml        # install k3s on the k3s_cluster hosts
 
 # dry run
 ansible-playbook playbooks/site.yml --check --diff
@@ -174,7 +177,7 @@ To stop an application without deleting its data/volume — set
 ```
 ansible/
 ├── ansible.cfg
-├── requirements.yml                      # public geerlingguy roles + collections
+├── requirements.yml                      # public roles (geerlingguy.*, xanmanning.k3s) + collections
 ├── examples/                             # working example: copy it and fill in your own data
 │   ├── inventory/
 │   │   ├── hosts.yml
@@ -192,8 +195,9 @@ ansible/
 │   ├── firewall.yml
 │   ├── users.yml
 │   ├── docker.yml
-│   └── apps.yml
-├── roles/                                # public roles (geerlingguy.*), installed via galaxy
+│   ├── apps.yml
+│   └── k3s.yml
+├── roles/                                # public roles (geerlingguy.*, xanmanning.k3s), installed via galaxy
 ├── ansible-collection-server-management/ # own reusable collection mishikama.server_management
 │   ├── galaxy.yml
 │   ├── README.md

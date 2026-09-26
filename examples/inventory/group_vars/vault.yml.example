@@ -8,3 +8,12 @@
 #                 or --vault-password-file ~/.vault_pass.txt
 
 vault_deploy_user_password_hash: "$6$rounds=656000$..."   # generate with: mkpasswd -m sha-512
+
+# Read-only SSH deploy key for the Flux git repo (roles/flux_operator).
+# Generate a dedicated key and add its public half as a read-only deploy key
+# on the repo. The host's known_hosts entry is fetched automatically via
+# ssh-keyscan when the role runs, so it doesn't need to go here.
+vault_flux_git_ssh_private_key: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  ...
+  -----END OPENSSH PRIVATE KEY-----

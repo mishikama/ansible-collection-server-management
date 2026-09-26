@@ -1,0 +1,12 @@
+---
+# Installs the Flux Operator into the k3s cluster via Helm.
+# Only needs to run against one node per cluster (it talks to the whole
+# cluster through its kubeconfig) — run_once picks the first host in
+# k3s_cluster. For a multi-node cluster, target the control-plane host
+# explicitly:
+#   ansible-playbook playbooks/flux-operator.yml --limit <control-plane-host>
+- name: Install Flux Operator via Helm
+  hosts: k3s_cluster
+  become: true
+  roles:
+    - role: mishikama.server_management.flux_operator

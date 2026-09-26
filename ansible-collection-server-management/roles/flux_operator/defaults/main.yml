@@ -1,0 +1,52 @@
+---
+# Flux Operator (https://github.com/controlplaneio-fluxcd/flux-operator) —
+# installed via `kubernetes.core.helm` from its official OCI chart. Talks to
+# the cluster through a kubeconfig already present on the host this role
+# runs on (e.g. a k3s server node) — it does not fetch or generate one.
+#
+# Only needs to run once per cluster (it configures the whole cluster, not
+# just the node it runs on). playbooks/flux-operator.yml uses `run_once`,
+# which picks the first host in k3s_cluster — correct as-is for a
+# single-node cluster. For a multi-node cluster, run with
+# `--limit <control-plane-host>` instead.
+
+flux_operator_kubeconfig: /etc/rancher/k3s/k3s.yaml
+
+flux_operator_release_name: flux-operator
+flux_operator_namespace: flux-system
+flux_operator_chart_ref: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+flux_operator_chart_version: ""   # empty = latest published chart
+flux_operator_values: {}          # extra Helm values, merged over the chart's defaults
+
+# Set to false if helm is already installed/managed some other way.
+flux_operator_install_helm: true
+flux_operator_helm_version: "v3.16.4"
+
+# -----------------------------------------------------------------------------
+# Cluster sync — connects Flux to a Git repository by applying a FluxInstance
+# CR (the operator's own bootstrap mechanism: it generates the GitRepository
+# + root Kustomization for you, no need to craft those by hand). Always
+# applied — fill in the vars below with your actual repo.
+#
+# Auth: SSH deploy key only. Generate a read-only deploy key for the repo,
+# then put the PRIVATE key into group_vars/vault.yml as
+# vault_flux_git_ssh_private_key — never inline here or in all.yml. The url
+# must use the ssh:// scheme (e.g. ssh://git@github.com/<org>/<repo>.git),
+# not the git@host:org/repo.git scp-like shorthand.
+#
+# The git host's known_hosts entry is fetched automatically at run time via
+# ssh-keyscan (trust-on-first-connect) — there's no known_hosts variable to
+# fill in. This means every run re-trusts whatever key the host presents,
+# which is weaker than pinning a verified key; acceptable for most setups,
+# but be aware of the tradeoff if the git host is reachable over an untrusted
+# network path.
+# -----------------------------------------------------------------------------
+flux_operator_distribution_version: "2.x"
+flux_operator_distribution_registry: "ghcr.io/fluxcd"
+
+flux_operator_git_url: ""                     # ssh://git@<host>/<org>/<repo>.git
+flux_operator_git_ref: "refs/heads/main"
+flux_operator_git_path: "clusters/default"    # directory inside the repo Flux reconciles
+flux_operator_git_secret_name: flux-system
+
+flux_operator_git_ssh_private_key: ""         # {{ vault_flux_git_ssh_private_key }}

@@ -13,6 +13,9 @@ roles:
   # Install Docker Engine + docker compose plugin
   - name: geerlingguy.docker
 
+  # Lightweight Kubernetes (k3s) — single-node or multi-node cluster
+  - name: xanmanning.k3s
+
 # Versions are intentionally not pinned — the latest available is installed.
 # To pin a version (recommended for production), add `version: "X.Y.Z"`
 # to the role after checking: ansible-galaxy role info <name>
@@ -24,3 +27,5 @@ collections:
     version: ">=8.0.0"
   - name: ansible.posix
     version: ">=1.5.0"
+  - name: kubernetes.core
+    version: ">=2.4.0"

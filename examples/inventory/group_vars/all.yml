@@ -133,3 +133,43 @@ docker_apps:
   #   state: stopped
   #   remove_volumes: false
   #   compose_src: "{{ playbook_dir }}/../examples/files/docker-compose/app-with-volume"
+
+# -----------------------------------------------------------------------------
+# xanmanning.k3s — lightweight Kubernetes, applied to the k3s_cluster group
+# (see hosts.yml). With a single host in that group this installs a
+# standalone single-node cluster; add more hosts to build a real cluster.
+# -----------------------------------------------------------------------------
+k3s_become: true               # required by the role — it needs root to install/manage k3s
+k3s_release_version: false     # false = latest stable; pin e.g. "v1.30.5+k3s1" for production
+k3s_build_cluster: true        # let the role join every k3s_cluster host into one cluster
+
+# k3s_control_node: true       # set on control-plane host(s) when building a multi-node
+                                # cluster; with a single host in k3s_cluster it's not needed —
+                                # the role treats it as the control node automatically.
+
+k3s_server:
+  write-kubeconfig-mode: "0644"   # let ansible_user run kubectl without sudo
+  # disable:                       # drop bundled components you don't need, e.g.:
+  #   - traefik
+
+k3s_agent: {}                  # worker-only flags; not used on a single-node setup
+
+# -----------------------------------------------------------------------------
+# roles/flux_operator (own) — Flux Operator (controlplaneio-fluxcd), installed
+# via Helm into the k3s cluster (see playbooks/flux-operator.yml)
+# -----------------------------------------------------------------------------
+flux_operator_kubeconfig: /etc/rancher/k3s/k3s.yaml   # kubeconfig on the k3s server node running this role
+flux_operator_namespace: flux-system
+flux_operator_chart_version: ""                       # empty = latest published chart
+flux_operator_values: {}                              # extra Helm values, e.g:
+  # multitenant:
+  #   enabled: true
+
+# Cluster sync — connects Flux to a Git repo via a FluxInstance CR (always
+# applied). Fill in your repo below once the deploy key is in
+# group_vars/vault.yml (see vault.yml.example). The git host's known_hosts
+# entry is fetched automatically via ssh-keyscan at run time.
+flux_operator_git_url: "ssh://git@github.com/<org>/<repo>.git"
+flux_operator_git_ref: "refs/heads/main"
+flux_operator_git_path: "clusters/example"    # manifests Flux should reconcile live here in the repo
+flux_operator_git_ssh_private_key: "{{ vault_flux_git_ssh_private_key }}"
