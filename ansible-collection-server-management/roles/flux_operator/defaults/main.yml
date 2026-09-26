@@ -28,25 +28,39 @@ flux_operator_helm_version: "v3.16.4"
 # + root Kustomization for you, no need to craft those by hand). Always
 # applied — fill in the vars below with your actual repo.
 #
-# Auth: SSH deploy key only. Generate a read-only deploy key for the repo,
-# then put the PRIVATE key into group_vars/vault.yml as
-# vault_flux_git_ssh_private_key — never inline here or in all.yml. The url
-# must use the ssh:// scheme (e.g. ssh://git@github.com/<org>/<repo>.git),
-# not the git@host:org/repo.git scp-like shorthand.
+# Auth: either an SSH deploy key or an HTTPS token (e.g. a GitHub fine-grained
+# personal access token), selected via flux_operator_git_auth_type.
 #
-# The git host's known_hosts entry is fetched automatically at run time via
-# ssh-keyscan (trust-on-first-connect) — there's no known_hosts variable to
-# fill in. This means every run re-trusts whatever key the host presents,
-# which is weaker than pinning a verified key; acceptable for most setups,
-# but be aware of the tradeoff if the git host is reachable over an untrusted
-# network path.
+# - ssh (default): generate a read-only deploy key for the repo, then put the
+#   PRIVATE key into group_vars/vault.yml as vault_flux_git_ssh_private_key —
+#   never inline here or in all.yml. The url must use the ssh:// scheme (e.g.
+#   ssh://git@github.com/<org>/<repo>.git), not the git@host:org/repo.git
+#   scp-like shorthand. The git host's known_hosts entry is fetched
+#   automatically at run time via ssh-keyscan (trust-on-first-connect) —
+#   there's no known_hosts variable to fill in. This means every run
+#   re-trusts whatever key the host presents, which is weaker than pinning a
+#   verified key; acceptable for most setups, but be aware of the tradeoff if
+#   the git host is reachable over an untrusted network path.
+#
+# - https: generate a token scoped read-only to the repo (e.g. a GitHub
+#   fine-grained PAT with "Contents: Read-only" on just that repo), then put
+#   it into group_vars/vault.yml as vault_flux_git_https_token — never inline
+#   here or in all.yml. The url must use the https:// scheme (e.g.
+#   https://github.com/<org>/<repo>.git). flux_operator_git_https_username
+#   can be left as-is for GitHub (it's ignored — the token is what's
+#   checked); some other git hosts do check it, so adjust if needed.
 # -----------------------------------------------------------------------------
 flux_operator_distribution_version: "2.x"
 flux_operator_distribution_registry: "ghcr.io/fluxcd"
 
-flux_operator_git_url: ""                     # ssh://git@<host>/<org>/<repo>.git
+flux_operator_git_url: ""                     # ssh://git@<host>/<org>/<repo>.git or https://<host>/<org>/<repo>.git
 flux_operator_git_ref: "refs/heads/main"
 flux_operator_git_path: "clusters/default"    # directory inside the repo Flux reconciles
 flux_operator_git_secret_name: flux-system
 
+flux_operator_git_auth_type: ssh              # ssh | https
+
 flux_operator_git_ssh_private_key: ""         # {{ vault_flux_git_ssh_private_key }}
+
+flux_operator_git_https_username: git         # some git hosts require a real username; GitHub ignores this for token auth
+flux_operator_git_https_token: ""             # {{ vault_flux_git_https_token }} — e.g. a GitHub fine-grained PAT

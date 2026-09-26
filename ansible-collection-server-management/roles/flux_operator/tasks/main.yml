@@ -48,16 +48,19 @@
         state: present
 
     - name: Determine the git host (and port) from the repo URL
+      when: flux_operator_git_auth_type == 'ssh'
       ansible.builtin.set_fact:
         flux_operator_git_host: "{{ flux_operator_git_url | urlsplit('hostname') }}"
         flux_operator_git_port: "{{ flux_operator_git_url | urlsplit('port') | default(22, true) }}"
 
-    - name: "Fetch {{ flux_operator_git_host }}'s SSH host key (trust on first connect)"
+    - name: "Fetch {{ flux_operator_git_host | default('') }}'s SSH host key (trust on first connect)"
+      when: flux_operator_git_auth_type == 'ssh'
       ansible.builtin.command: "ssh-keyscan -p {{ flux_operator_git_port }} {{ flux_operator_git_host }}"
       register: flux_operator_known_hosts
       changed_when: false
 
     - name: Create the git SSH deploy-key secret
+      when: flux_operator_git_auth_type == 'ssh'
       kubernetes.core.k8s:
         kubeconfig: "{{ flux_operator_kubeconfig }}"
         state: present
@@ -71,6 +74,23 @@
           stringData:
             identity: "{{ flux_operator_git_ssh_private_key }}"
             known_hosts: "{{ flux_operator_known_hosts.stdout }}"
+      no_log: true
+
+    - name: Create the git HTTPS token secret
+      when: flux_operator_git_auth_type == 'https'
+      kubernetes.core.k8s:
+        kubeconfig: "{{ flux_operator_kubeconfig }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ flux_operator_git_secret_name }}"
+            namespace: "{{ flux_operator_namespace }}"
+          type: Opaque
+          stringData:
+            username: "{{ flux_operator_git_https_username }}"
+            password: "{{ flux_operator_git_https_token }}"
       no_log: true
 
     - name: Apply the FluxInstance (wires up GitRepository + root Kustomization)

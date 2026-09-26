@@ -9,11 +9,17 @@
 
 vault_deploy_user_password_hash: "$6$rounds=656000$..."   # generate with: mkpasswd -m sha-512
 
-# Read-only SSH deploy key for the Flux git repo (roles/flux_operator).
-# Generate a dedicated key and add its public half as a read-only deploy key
-# on the repo. The host's known_hosts entry is fetched automatically via
+# Read-only SSH deploy key for the Flux git repo (roles/flux_operator),
+# used when flux_operator_git_auth_type: ssh (the default). Generate a
+# dedicated key and add its public half as a read-only deploy key on the
+# repo. The host's known_hosts entry is fetched automatically via
 # ssh-keyscan when the role runs, so it doesn't need to go here.
 vault_flux_git_ssh_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   ...
   -----END OPENSSH PRIVATE KEY-----
+
+# HTTPS token for the Flux git repo (roles/flux_operator), used when
+# flux_operator_git_auth_type: https instead. E.g. a GitHub fine-grained
+# personal access token scoped to "Contents: Read-only" on just that repo.
+vault_flux_git_https_token: "github_pat_..."
