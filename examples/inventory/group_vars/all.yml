@@ -184,3 +184,12 @@ flux_operator_git_ssh_private_key: "{{ vault_flux_git_ssh_private_key }}"
 
 flux_operator_git_ref: "refs/heads/main"
 flux_operator_git_path: "clusters/example"    # manifests Flux should reconcile live here in the repo
+
+# Optional: SOPS decryption for secrets committed (encrypted) in the synced
+# repo. Leave commented out if you don't use SOPS — no secret is created.
+# The age keypair is generated once locally (age-keygen -o age.agekey); the
+# public half encrypts files via `sops -e --age age1...`, the private half
+# goes in group_vars/vault.yml (see vault.yml.example). Kustomization
+# resources in the synced repo reference this secret via
+# spec.decryption.secretRef.name to actually decrypt.
+# flux_operator_sops_age_key: "{{ vault_flux_sops_age_key }}"

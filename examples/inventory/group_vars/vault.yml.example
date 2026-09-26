@@ -23,3 +23,10 @@ vault_flux_git_ssh_private_key: |
 # flux_operator_git_auth_type: https instead. E.g. a GitHub fine-grained
 # personal access token scoped to "Contents: Read-only" on just that repo.
 vault_flux_git_https_token: "github_pat_..."
+
+# age private key for Flux's SOPS decryption (roles/flux_operator), used to
+# decrypt SOPS-encrypted secrets committed in the synced git repo. Generate
+# with: age-keygen -o age.agekey. Leave flux_operator_sops_age_key unset in
+# group_vars to skip creating this secret if you don't use SOPS.
+vault_flux_sops_age_key: |
+  AGE-SECRET-KEY-...

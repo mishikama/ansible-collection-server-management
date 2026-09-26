@@ -93,6 +93,22 @@
             password: "{{ flux_operator_git_https_token }}"
       no_log: true
 
+    - name: "Create the SOPS age key secret ({{ flux_operator_sops_secret_name }})"
+      when: flux_operator_sops_age_key | length > 0
+      kubernetes.core.k8s:
+        kubeconfig: "{{ flux_operator_kubeconfig }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ flux_operator_sops_secret_name }}"
+            namespace: "{{ flux_operator_namespace }}"
+          type: Opaque
+          stringData:
+            age.agekey: "{{ flux_operator_sops_age_key }}"
+      no_log: true
+
     - name: Apply the FluxInstance (wires up GitRepository + root Kustomization)
       kubernetes.core.k8s:
         kubeconfig: "{{ flux_operator_kubeconfig }}"
