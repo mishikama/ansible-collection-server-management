@@ -166,10 +166,21 @@ flux_operator_values: {}                              # extra Helm values, e.g:
   #   enabled: true
 
 # Cluster sync — connects Flux to a Git repo via a FluxInstance CR (always
-# applied). Fill in your repo below once the deploy key is in
-# group_vars/vault.yml (see vault.yml.example). The git host's known_hosts
-# entry is fetched automatically via ssh-keyscan at run time.
+# applied). Auth is either an SSH deploy key (default) or an HTTPS token
+# (e.g. a GitHub fine-grained PAT), picked via flux_operator_git_auth_type.
+# Put the secret in group_vars/vault.yml (see vault.yml.example) — never here.
+
+# Option A: SSH deploy key (default). The git host's known_hosts entry is
+# fetched automatically via ssh-keyscan at run time.
+flux_operator_git_auth_type: ssh
 flux_operator_git_url: "ssh://git@github.com/<org>/<repo>.git"
+flux_operator_git_ssh_private_key: "{{ vault_flux_git_ssh_private_key }}"
+
+# Option B: HTTPS token (e.g. GitHub fine-grained PAT scoped read-only to the
+# repo). Uncomment and switch auth_type instead of using option A:
+# flux_operator_git_auth_type: https
+# flux_operator_git_url: "https://github.com/<org>/<repo>.git"
+# flux_operator_git_https_token: "{{ vault_flux_git_https_token }}"
+
 flux_operator_git_ref: "refs/heads/main"
 flux_operator_git_path: "clusters/example"    # manifests Flux should reconcile live here in the repo
-flux_operator_git_ssh_private_key: "{{ vault_flux_git_ssh_private_key }}"
