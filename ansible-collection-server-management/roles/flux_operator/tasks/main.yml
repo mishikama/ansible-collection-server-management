@@ -1,0 +1,95 @@
+---
+- name: "Ensure helm {{ flux_operator_helm_version }} is installed"
+  when: flux_operator_install_helm | bool
+  block:
+    - name: Check for an existing helm binary
+      ansible.builtin.command: helm version --short
+      register: flux_operator_helm_check
+      failed_when: false
+      changed_when: false
+
+    - name: Download and install helm
+      when: flux_operator_helm_check.rc != 0
+      block:
+        - name: Map ansible_architecture to helm's release naming
+          ansible.builtin.set_fact:
+            flux_operator_helm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+        - name: Download and unpack the helm release tarball
+          ansible.builtin.unarchive:
+            src: "https://get.helm.sh/helm-{{ flux_operator_helm_version }}-linux-{{ flux_operator_helm_arch }}.tar.gz"
+            dest: /tmp
+            remote_src: true
+
+        - name: Install the helm binary to /usr/local/bin
+          ansible.builtin.copy:
+            src: "/tmp/linux-{{ flux_operator_helm_arch }}/helm"
+            dest: /usr/local/bin/helm
+            mode: "0755"
+            remote_src: true
+
+- name: Install/upgrade the Flux Operator via Helm
+  kubernetes.core.helm:
+    name: "{{ flux_operator_release_name }}"
+    chart_ref: "{{ flux_operator_chart_ref }}"
+    chart_version: "{{ flux_operator_chart_version | default(omit, true) }}"
+    release_namespace: "{{ flux_operator_namespace }}"
+    create_namespace: true
+    kubeconfig: "{{ flux_operator_kubeconfig }}"
+    values: "{{ flux_operator_values }}"
+  run_once: true
+
+- name: "Connect Flux to {{ flux_operator_git_url }}"
+  run_once: true
+  block:
+    - name: Ensure the kubernetes python client is installed
+      ansible.builtin.apt:
+        name: python3-kubernetes
+        state: present
+
+    - name: Determine the git host (and port) from the repo URL
+      ansible.builtin.set_fact:
+        flux_operator_git_host: "{{ flux_operator_git_url | urlsplit('hostname') }}"
+        flux_operator_git_port: "{{ flux_operator_git_url | urlsplit('port') | default(22, true) }}"
+
+    - name: "Fetch {{ flux_operator_git_host }}'s SSH host key (trust on first connect)"
+      ansible.builtin.command: "ssh-keyscan -p {{ flux_operator_git_port }} {{ flux_operator_git_host }}"
+      register: flux_operator_known_hosts
+      changed_when: false
+
+    - name: Create the git SSH deploy-key secret
+      kubernetes.core.k8s:
+        kubeconfig: "{{ flux_operator_kubeconfig }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ flux_operator_git_secret_name }}"
+            namespace: "{{ flux_operator_namespace }}"
+          type: Opaque
+          stringData:
+            identity: "{{ flux_operator_git_ssh_private_key }}"
+            known_hosts: "{{ flux_operator_known_hosts.stdout }}"
+      no_log: true
+
+    - name: Apply the FluxInstance (wires up GitRepository + root Kustomization)
+      kubernetes.core.k8s:
+        kubeconfig: "{{ flux_operator_kubeconfig }}"
+        state: present
+        definition:
+          apiVersion: fluxcd.controlplane.io/v1
+          kind: FluxInstance
+          metadata:
+            name: flux
+            namespace: "{{ flux_operator_namespace }}"
+          spec:
+            distribution:
+              version: "{{ flux_operator_distribution_version }}"
+              registry: "{{ flux_operator_distribution_registry }}"
+            sync:
+              kind: GitRepository
+              url: "{{ flux_operator_git_url }}"
+              ref: "{{ flux_operator_git_ref }}"
+              path: "{{ flux_operator_git_path }}"
+              pullSecret: "{{ flux_operator_git_secret_name }}"

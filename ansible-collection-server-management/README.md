@@ -9,6 +9,7 @@ Ansible Collection with roles for basic Debian/Ubuntu server management.
 | `users` | `mishikama.server_management.users` | Create/remove users, ssh keys, sudo |
 | `packages` | `mishikama.server_management.packages` | Install packages, `apt dist-upgrade`, auto-update |
 | `docker_apps` | `mishikama.server_management.docker_apps` | Deploy and manage docker-compose stacks (started/stopped/absent) |
+| `flux_operator` | `mishikama.server_management.flux_operator` | Install the Flux Operator via Helm and connect it to a Git repo (FluxInstance + SSH deploy key) |
 
 Variables for each role and the expected input format — see `roles/<role>/defaults/main.yml`.
 
@@ -46,6 +47,7 @@ collections:
     - role: mishikama.server_management.users
     - role: mishikama.server_management.packages
     - role: mishikama.server_management.docker_apps
+    - role: mishikama.server_management.flux_operator
 ```
 
 ## How to publish this as a separate public repository

@@ -8,7 +8,8 @@ authors:
 description: >-
   Roles for basic Debian/Ubuntu server management: local user accounts
   (create/remove, ssh keys, sudo), package installation and system updates,
-  deploying and managing docker-compose applications.
+  deploying and managing docker-compose applications, and installing the
+  Flux Operator on a k3s cluster via Helm.
 
 license:
   - MIT
@@ -21,6 +22,10 @@ tags:
   - docker
   - users
   - security
+  - kubernetes
+
+dependencies:
+  kubernetes.core: ">=2.4.0"
 
 # Fill in after you publish the repository on GitHub —
 # needed to install it via `type: git` from another project.
