@@ -64,3 +64,21 @@ flux_operator_git_ssh_private_key: ""         # {{ vault_flux_git_ssh_private_ke
 
 flux_operator_git_https_username: git         # some git hosts require a real username; GitHub ignores this for token auth
 flux_operator_git_https_token: ""             # {{ vault_flux_git_https_token }} — e.g. a GitHub fine-grained PAT
+
+# -----------------------------------------------------------------------------
+# SOPS decryption — optional. If your synced repo contains SOPS-encrypted
+# secrets, Flux's kustomize-controller needs an age private key to decrypt
+# them, referenced from each Kustomization resource via
+# `spec.decryption.{provider: sops, secretRef.name: <flux_operator_sops_secret_name>}`
+# (that wiring lives in the git repo Flux syncs, not here).
+#
+# Generate the keypair once, locally: `age-keygen -o age.agekey`. The public
+# key (age1...) is not a secret — use it to encrypt files with
+# `sops -e --age age1...`. The private key goes into group_vars/vault.yml as
+# vault_flux_sops_age_key — never inline here or in all.yml.
+#
+# Leave flux_operator_sops_age_key empty to skip creating this secret
+# entirely (e.g. if you don't use SOPS).
+# -----------------------------------------------------------------------------
+flux_operator_sops_secret_name: sops-age
+flux_operator_sops_age_key: ""                # {{ vault_flux_sops_age_key }}
