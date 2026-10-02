@@ -78,6 +78,21 @@ Don't store secrets (password hashes, etc.) in plain text — see
 For individual hosts/groups you can override variables in
 `inventory/host_vars/<host>.yml` or create new files under `group_vars/`.
 
+### Apps shared by every host vs. per-host apps
+
+Instead of setting `docker_apps` directly, you can split it into:
+
+- `docker_apps_common` — set once in a group_vars file (e.g.
+  `group_vars/docker/docker_apps.yml`); applies to every host in that group
+  (e.g. `watchtower`).
+- `docker_apps_extra` — set per host in `host_vars/<host>/docker_apps.yml`;
+  that host's own apps.
+
+The role's defaults combine them as `docker_apps: "{{ docker_apps_common + docker_apps_extra }}"`,
+so a host with no `docker_apps_extra` of its own still gets `docker_apps_common`
+with no host_vars file needed at all. Setting `docker_apps` directly still
+works and takes precedence over this split.
+
 ## Running it
 
 ```bash

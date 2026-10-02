@@ -1,5 +1,16 @@
 ---
-docker_apps: []
+# docker_apps is what the role actually loops over. By default it's built
+# from two pieces so apps shared by every host (e.g. watchtower) don't have
+# to be repeated per host:
+#   - docker_apps_common — set in group_vars (e.g. group_vars/docker/docker_apps.yml),
+#     applies to every host in the group
+#   - docker_apps_extra  — set in host_vars/<host>/docker_apps.yml, that host's own apps
+# A host with no docker_apps_extra still gets docker_apps_common. You can
+# still set docker_apps directly (in group_vars/host_vars) to bypass this
+# split entirely — that takes precedence over this default expression.
+docker_apps_common: []
+docker_apps_extra: []
+docker_apps: "{{ docker_apps_common + docker_apps_extra }}"
 # Item format (see the example in inventory/group_vars/all.yml):
 # - name: myapp
 #   state: started        # started|stopped|absent
