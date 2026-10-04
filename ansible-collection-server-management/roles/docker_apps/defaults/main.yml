@@ -17,6 +17,11 @@ docker_apps: "{{ docker_apps_common + docker_apps_extra }}"
 #   pull: missing          # always|missing|never
 #   remove_orphans: true
 #   compose_src: "{{ playbook_dir }}/../files/docker-compose/myapp"   # directory with docker-compose.yml
+#     # can also be a list of directories, copied in order into the same
+#     # destination — later directories add/overwrite files from earlier
+#     # ones. Useful for layering a shared base (e.g. a common compose.yaml)
+#     # with host-specific files (configs, secrets) without needing a
+#     # symlink on disk to fake a single merged directory.
 #   env_file: ""           # optional, path to .env on the control machine
 
 docker_apps_base_dir: /opt/docker-apps   # where compose files are deployed on the server
