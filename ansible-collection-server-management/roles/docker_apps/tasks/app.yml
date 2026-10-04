@@ -9,9 +9,12 @@
 
 - name: "{{ app.name }}: sync docker-compose files to server"
   ansible.builtin.copy:
-    src: "{{ app.compose_src }}/"
+    src: "{{ item }}/"
     dest: "{{ docker_apps_base_dir }}/{{ app.name }}/"
     mode: preserve
+  loop: "{{ [app.compose_src] if app.compose_src is string else app.compose_src }}"
+  loop_control:
+    label: "{{ item }}"
   when: app.compose_src is defined
 
 - name: "{{ app.name }}: deploy .env file"
