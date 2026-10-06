@@ -86,6 +86,13 @@ packages_base:
 
 packages_extra: []   # add project-specific packages in group_vars/<group>.yml
 
+# Standalone .deb packages not available in any apt repository — each item is
+# a local path on the target host or a URL (downloaded automatically by the
+# apt module). Pin the exact release version; it won't be updated by
+# packages_upgrade (dist-upgrade) since it isn't tracked by apt.
+packages_deb_files: []
+  # - https://github.com/derailed/k9s/releases/download/v0.32.5/k9s_linux_amd64.deb
+
 # -----------------------------------------------------------------------------
 # roles/users (own) — server accounts
 # state: present|absent
