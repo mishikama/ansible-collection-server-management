@@ -5,3 +5,7 @@ packages_autoremove: true
 packages_reboot_if_required: false
 packages_base: []
 packages_extra: []
+# List of .deb packages to install directly, bypassing apt repositories.
+# Each item is a local path on the target host or a URL ansible.builtin.apt
+# will download before installing (e.g. a GitHub release asset).
+packages_deb_files: []
