@@ -12,3 +12,7 @@ __pycache__/
 # Roles installed from requirements.yml (ansible-galaxy install -r requirements.yml)
 roles/geerlingguy.*
 roles/xanmanning.*
+
+# Public collection installed from requirements.yml
+.collections/ansible_collections/prometheus/
+.collections/ansible_collections/prometheus.prometheus-*.info/

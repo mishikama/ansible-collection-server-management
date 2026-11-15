@@ -1,0 +1,6 @@
+---
+- name: Install Prometheus node exporter
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: prometheus.prometheus.node_exporter

@@ -21,6 +21,7 @@ roles:
 # to the role after checking: ansible-galaxy role info <name>
 
 collections:
+  - name: prometheus.prometheus
   - name: community.docker
     version: ">=3.10.0"
   - name: community.general

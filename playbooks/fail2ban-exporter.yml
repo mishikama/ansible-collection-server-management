@@ -1,0 +1,6 @@
+---
+- name: Install Prometheus fail2ban exporter
+  hosts: debian_servers
+  become: true
+  roles:
+    - role: prometheus.prometheus.fail2ban_exporter

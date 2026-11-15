@@ -1,9 +1,11 @@
 ---
-# Full run: packages -> security -> firewall -> users -> docker -> applications -> k3s -> flux-operator
+# Full run: packages -> security -> node-exporter -> fail2ban-exporter -> firewall -> users -> docker -> applications -> k3s -> flux-operator
 # ansible-playbook playbooks/site.yml
 
 - import_playbook: packages.yml
 - import_playbook: security.yml
+- import_playbook: node-exporter.yml
+- import_playbook: fail2ban-exporter.yml
 - import_playbook: firewall.yml
 - import_playbook: users.yml
 - import_playbook: docker.yml

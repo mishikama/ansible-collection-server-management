@@ -17,6 +17,8 @@ single flag (`-i`) or a line in `ansible.cfg`.
 | Area | Role | Source |
 |---|---|---|
 | SSH hardening, sudoers, fail2ban, security auto-updates | `geerlingguy.security` | public role (Galaxy) |
+| Prometheus metrics for fail2ban | `prometheus.prometheus.fail2ban_exporter` | public collection (Galaxy) |
+| Prometheus host metrics (CPU, memory, disks, network) | `prometheus.prometheus.node_exporter` | public collection (Galaxy) |
 | Firewall (iptables, list of allowed ports) | `geerlingguy.firewall` | public role (Galaxy) |
 | Install Docker Engine + `docker compose` plugin | `geerlingguy.docker` | public role (Galaxy) |
 | Install k3s (single-node or multi-node cluster) | `xanmanning.k3s` | public role (Galaxy) |
@@ -102,6 +104,8 @@ ansible-playbook playbooks/site.yml
 # piece by piece
 ansible-playbook playbooks/packages.yml   # packages + system update
 ansible-playbook playbooks/security.yml   # ssh hardening, auto-updates, fail2ban
+ansible-playbook playbooks/fail2ban-exporter.yml # fail2ban metrics for Prometheus
+ansible-playbook playbooks/node-exporter.yml # host metrics for Prometheus
 ansible-playbook playbooks/firewall.yml   # firewall
 ansible-playbook playbooks/users.yml      # users and ssh keys
 ansible-playbook playbooks/docker.yml     # install docker
@@ -114,6 +118,48 @@ ansible-playbook playbooks/site.yml --check --diff
 # limit to one host
 ansible-playbook playbooks/site.yml --limit srv1.example.com
 ```
+
+## Node exporter
+
+**Security:** protect both exporters' metrics from public Internet access
+before deployment. The example binds to all interfaces (`0.0.0.0`) and
+configures no authentication. Restrict ports `9100` and `9191` to the
+Prometheus source IP using a firewall, or bind the exporters to a private/VPN
+IP (use `127.0.0.1` when Prometheus runs on the same host). Do not add these
+ports to `firewall_extra_tcp_ports`, which allows access from any source.
+
+The node exporter is included in `site.yml` and uses the same
+`prometheus.prometheus` collection as the fail2ban exporter. Run it separately:
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/node-exporter.yml
+```
+
+Configure `node_exporter_*` in `group_vars/all.yml`; see the example inventory.
+The example serves host metrics on `0.0.0.0:9100/metrics`.
+For remote scraping, allow TCP `9100` using `firewall_additional_rules`
+restricted to the Prometheus source IP, then run `playbooks/firewall.yml`.
+Add the server's `host:9100` to your Prometheus scrape targets.
+
+## Fail2ban exporter
+
+**Security:** port `9191` must be protected from public Internet access;
+apply the same restrictions described in the Node exporter section above.
+
+The exporter is included in `site.yml` after `security.yml`, which installs
+fail2ban. To run it separately after installing dependencies and fail2ban:
+
+```bash
+ansible-playbook -i inventory/hosts.yml playbooks/fail2ban-exporter.yml
+```
+
+Configure `fail2ban_exporter_*` in `group_vars/all.yml`; see the example
+inventory and the [upstream role documentation](https://prometheus-community.github.io/ansible/branch/main/fail2ban_exporter_role.html).
+The example listens on `0.0.0.0:9191` and serves metrics at `/metrics`.
+For remote Prometheus scraping, allow TCP `9191` in the firewall (prefer
+`firewall_additional_rules` restricted to the Prometheus source IP), then
+run `playbooks/firewall.yml`. Add the server's `host:9191` to your
+Prometheus scrape targets.
 
 ## Changing the SSH port without locking yourself out
 
@@ -207,6 +253,8 @@ ansible/
 │   ├── site.yml                          # full run
 │   ├── packages.yml
 │   ├── security.yml
+│   ├── fail2ban-exporter.yml
+│   ├── node-exporter.yml
 │   ├── firewall.yml
 │   ├── users.yml
 │   ├── docker.yml

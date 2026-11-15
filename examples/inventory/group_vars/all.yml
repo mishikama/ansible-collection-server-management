@@ -38,6 +38,29 @@ security_fail2ban_enabled: true
 security_sudoers_passwordless: []
 
 # -----------------------------------------------------------------------------
+# prometheus.prometheus.node_exporter — host metrics for Prometheus
+# SECURITY: protect metrics from public Internet access before deployment.
+# 0.0.0.0 listens on all interfaces; no authentication is configured here.
+# Allow TCP 9100 only from the Prometheus IP, or bind to a private/VPN IP
+# (127.0.0.1 if Prometheus runs locally). Do not add 9100 to firewall_extra_tcp_ports.
+# -----------------------------------------------------------------------------
+node_exporter_web_listen_address: "0.0.0.0:9100"
+node_exporter_web_telemetry_path: /metrics
+# node_exporter_version: "1.12.1"   # optional: pin the exporter release
+
+# -----------------------------------------------------------------------------
+# prometheus.prometheus.fail2ban_exporter — Prometheus metrics for fail2ban
+# Requires fail2ban running (installed by security.yml / packages.yml).
+# SECURITY: protect metrics from public Internet access before deployment.
+# 0.0.0.0 listens on all interfaces; no authentication is configured here.
+# Allow TCP 9191 only from the Prometheus IP, or bind to a private/VPN IP
+# (127.0.0.1 if Prometheus runs locally). Do not add 9191 to firewall_extra_tcp_ports.
+# -----------------------------------------------------------------------------
+fail2ban_exporter_web_listen_address: "0.0.0.0:9191"
+fail2ban_exporter_socket: /var/run/fail2ban/fail2ban.sock
+# fail2ban_exporter_version: "0.10.3"   # optional: pin the exporter release
+
+# -----------------------------------------------------------------------------
 # geerlingguy.firewall — basic firewall rules (iptables)
 #
 # Don't list the SSH port here — it's added automatically from
